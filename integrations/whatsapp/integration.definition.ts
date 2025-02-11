@@ -34,49 +34,51 @@ export const INTEGRATION_NAME = 'whatsapp'
 
 export default new IntegrationDefinition({
   name: INTEGRATION_NAME,
-  version: '2.3.1',
+  version: '2.4.0',
   title: 'WhatsApp',
   description: 'Send and receive messages through WhatsApp.',
   icon: 'icon.svg',
   readme: 'hub.md',
-  configuration: {
-    identifier: {
-      linkTemplateScript: 'linkTemplate.vrl',
-    },
-    ui: {
-      phoneNumberId: {
-        title: 'Default Phone Number ID for starting conversations',
+  configurations: {
+    manualApp: {
+      title: 'Manual Configuration',
+      description: 'Manual Configuration, use your own Meta app (for advanced use cases only)',
+      ui: {
+        phoneNumberId: {
+          title: 'Default Phone Number ID for starting conversations',
+        },
       },
-      useManualConfiguration: {
-        title: 'Use Manual Configuration',
-      },
-    },
-    schema: z
-      .object({
+      schema: z.object({
         typingIndicatorEmoji: z
           .boolean()
           .default(false)
           .describe('Temporarily add an emoji to received messages to indicate when bot is processing message'),
-        useManualConfiguration: z.boolean().optional().describe('Skip oAuth and supply details from a Meta App'),
-        verifyToken: z.string().optional().describe('Token used for verification when subscribing to webhooks'),
+        verifyToken: z
+          .string()
+          .min(1)
+          .describe(
+            'Token used for verification when subscribing to webhooks on the Meta app (type any random string)'
+          ),
         accessToken: z
           .string()
-          .optional()
+          .min(1)
           .describe('Access Token from a System Account that has permission to the Meta app'),
         clientSecret: z.string().optional().describe('Meta app secret used for webhook signature check'),
-        phoneNumberId: z.string().optional().describe('Default Phone used for starting conversations'),
-      })
-      .hidden((formData) => {
-        const showConfig = !formData?.useManualConfiguration
-
-        return {
-          typingInficatorEmoji: false,
-          verifyToken: showConfig,
-          accessToken: showConfig,
-          clientSecret: showConfig,
-          phoneNumberId: showConfig,
-        }
+        phoneNumberId: z.string().min(1).describe('Default Phone id used for starting conversations'),
       }),
+    },
+  },
+  configuration: {
+    identifier: {
+      linkTemplateScript: 'linkTemplate.vrl',
+      required: true,
+    },
+    schema: z.object({
+      typingIndicatorEmoji: z
+        .boolean()
+        .default(false)
+        .describe('Temporarily add an emoji to received messages to indicate when bot is processing message'),
+    }),
   },
   identifier: {
     extractScript: 'extract.vrl',
